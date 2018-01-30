@@ -6,9 +6,10 @@
 
 *************************************************/
 import React, { Component } from "react";
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
-import { List, ListItem, SearchBar, Icon } from "react-native-elements";
+import { Image, View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { List, ListItem, SearchBar, Button } from "react-native-elements";
 import { StackNavigator } from 'react-navigation';
+import PopupDialog from 'react-native-popup-dialog';
 
 console.disableYellowBox = true;
 
@@ -42,7 +43,7 @@ class HomeScreen extends Component {
   };
 
   componentDidMount() {
-    this.watchId = navigator.geolocation.watchPosition(
+    this.watchId = navigator.geolocation.getCurrentPosition(
       (position) => {
         this.setState({
           latitude: position.coords.latitude,
@@ -53,7 +54,7 @@ class HomeScreen extends Component {
         //this.refs.searchBar.focus();
       },
       (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 30000},
     );
     
   }
@@ -118,8 +119,7 @@ class HomeScreen extends Component {
             extraData={this.state}
             renderItem={({ item }) => (
               <ListItem
-                roundAvatar
-                onPress={() => navigate('PoiDetails', { name: item.osm_name, id: item.osm_id, lat:item.osm_lat, lng:item.osm_lng, cat:item.osm_cat })}
+                onPress={() => navigate('PoiDetails', { name: item.osm_name, id: item.id, lat:item.osm_lat, lng:item.osm_lng, cat:item.osm_cat })}
                 title={`${item.osm_name}`}
                 subtitle={`${item.distance} ${item.direction}`}
                 avatar={{ uri: item.avatar }}
@@ -134,27 +134,58 @@ class HomeScreen extends Component {
 
 // POI DETAILS
 class PoiDetails extends React.Component {
+  
   static navigationOptions = ({ navigation }) => ({
     title: `${navigation.state.params.name}`,
     headerStyle: {backgroundColor: '#55828b'},
     headerTintColor: '#fff',
     headerTitleStyle: {fontSize:20, fontWeight:'normal'}
   });
+
+  _doCheckin(id) {
+    console.log(id);
+    fetch('http://52.55.18.220/openpoi.org/h/checkin.php?key=KL2RmYfnyEqS7nd00nGo5czG25qayHdF&user=1&id='+id, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+    this.popupDialog.show();
+  }
+
   render() {
     const { params } = this.props.navigation.state;
     return (
+    <View style={{flex:1}}>
       <View style={{flex:1, backgroundColor:'#fff'}}>
-        <Text style={{fontSize:15,margin:15,fontWeight:'bold',color:'#55828b'}}>OSM ID: {params.id}</Text>
+        <Text style={{fontSize:15,margin:15,fontWeight:'bold',color:'#55828b'}}>OPENPOI ID: {params.id}</Text>
         <Text style={{fontSize:15,margin:15,fontWeight:'bold',color:'#55828b'}}>CATEGORY: {params.cat}</Text>
         <Text style={{fontSize:15,margin:15,fontWeight:'bold',color:'#55828b'}}>LOCATION: {params.lat}, {params.lng}</Text>
-
-        <Icon
+        
+        <Button
           raised
-          name='compass'
-          type='font-awesome'
-          color='#55828b'
-          onPress={() => console.log('hello')} />
+          icon={{name: 'compass', type: 'font-awesome'}}
+          title='CHECK-IN'
+          color='#fff'
+          fontWeight='bold'
+          backgroundColor='#c94c4c'
+          onPress={() => this._doCheckin(params.id)} />
+
       <Text style={{fontSize:15,margin:15,fontWeight:'bold',color:'#55828b'}}>PREVIOUS CHECK-INS:</Text>
+
+      </View>
+        <PopupDialog 
+          width={0.7}
+          height={100}
+          dialogStyle={{backgroundColor:'#55828b'}}
+          overlayBackgroundColor='#333'
+          ref={(popupDialog) => { this.popupDialog = popupDialog; }}
+        >
+          <View style={{textAlign:'center'}}>
+            <Text style={{margin:20, fontSize:20, color:'#fff', fontWeight:'bold'}}>Check-in Successful</Text>
+          </View>
+        </PopupDialog>
       </View>
       
     );
