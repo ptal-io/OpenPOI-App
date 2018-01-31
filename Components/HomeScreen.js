@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, Image } from "react-native";
 import { List, ListItem, SearchBar } from "react-native-elements";
 import { StackNavigator } from 'react-navigation';
 
@@ -26,7 +26,7 @@ export default class HomeScreen extends Component {
   }
 
   static navigationOptions = {
-    title: 'OPENPOI',
+    title: 'OPENPOI', //<Image source={require('../img/logo.png')}/>,
     headerStyle: {backgroundColor: '#55828b'},
     headerTintColor: '#fff',
     headerTitleStyle: {fontFamily:'monospace', fontSize:30, fontWeight:'bold'}
@@ -96,12 +96,13 @@ export default class HomeScreen extends Component {
            <SearchBar
               placeholder='Find Place of Interest'
               ref={(ref) => this.searchBar = ref}
-              containerStyle={{backgroundColor:'#3b6064', border:0}}
+              containerStyle={{backgroundColor:'#3b6064'}}
               inputStyle={{backgroundColor:'#d7ecf1'}}
               onChangeText={(text) => this._handleResults(text)}
 
             />
         </View>
+
         <View style={{ backgroundColor: '#333', flex: 1}}>
 
           <FlatList style={{backgroundColor:'#fff'}}
