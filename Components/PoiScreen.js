@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, Text, StyleSheet, TextInput, FlatList, Modal, TouchableNativeFeedback, Keyboard } from "react-native";
+import { View, Text, StyleSheet, TextInput, FlatList, Modal, TouchableNativeFeedback, Keyboard, AsyncStorage } from "react-native";
 import { Button, ListItem, List } from "react-native-elements";
 import { StackNavigator } from 'react-navigation';
 import styles from './style_poiscreen';
@@ -12,6 +12,7 @@ export default class PoiScreen extends React.Component {
     this.state = {
       loading: false,
       data: [],
+      userid: null,
       key: 'KL2RmYfnyEqS7nd00nGo5czG25qayHdF',
       error: null,
       tags: '',
@@ -29,18 +30,26 @@ export default class PoiScreen extends React.Component {
   });
 
   componentWillMount() {
-    var url = 'http://52.55.18.220:3000/getcheckins?poi='+this.props.navigation.state.params.id;
-    this.setState({category:this.props.navigation.state.params.cat});
 
-    //console.log(this.props.navigation.state);
-    console.log(url);
+    try {
+      AsyncStorage.getItem("openpoiuserid").then((value) => {
+          console.log("POI SCREEN USERID:"+ value);
+          this.state.userid = value;      
+      }).done();
+    } catch (error) {
+        console.log('error')
+    }
+
+    var url = 'https://openpoi.org/checkin/get?poi='+this.props.navigation.state.params.id;
+    this.setState({category:this.props.navigation.state.params.cat});
+    console.log("POI CHECKINS: "+url);
     this.setState({ loading: true });
     fetch(url)
       .then(response => response.json())
       .then(response => {
-        console.log(response.result[0]);
+        console.log(response[0]);
         this.setState({
-          data: response.result,
+          data: response,
           error: response.error || null,
           loading: false,
           refreshing: false,
@@ -52,7 +61,7 @@ export default class PoiScreen extends React.Component {
       });
 
     // GET CATEGORY.  To Do: combine this with getcheckins and other data.
-    var url = 'http://52.55.18.220:3000/getcategory?poi='+this.props.navigation.state.params.id;
+    var url = 'https://openpoi.org/tags/get?poi='+this.props.navigation.state.params.id;
     fetch(url)
       .then(response => response.json())
       .then(response => {
@@ -73,8 +82,8 @@ export default class PoiScreen extends React.Component {
   // CHECK-IN CURRENT USER
   doCheckin(id, lat, lng) {
 
-    console.log(lat);
-    fetch('http://52.55.18.220:3000/addcheckin?user=1&poi='+id+"&lat="+lat+"&lng="+lng, {
+    console.log("USERID: "+this.state.userid);
+    fetch('https://openpoi.org/checkin/add?user='+this.state.userid+'&poi='+id+'&lat='+lat+'&lng='+lng, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -97,7 +106,7 @@ export default class PoiScreen extends React.Component {
     var tags = this.state.tags.replace(":","=").replace("#","&");
     var newcat = tags.split("=");
     console.log(tags);
-    var url = 'http://52.55.18.220:3000/addtags?user=1&poi='+id+tags;
+    var url = 'https://openpoi.org/tags/add?user=1&poi='+id+tags;
     console.log(url);
     fetch(url, {
       method: 'GET',
@@ -173,6 +182,7 @@ export default class PoiScreen extends React.Component {
           <FlatList style={{backgroundColor:'#fff'}}
             roundAvatar
             data={this.state.data}
+            keyExtractor={(item, index) => index}
             renderItem={({ item }) => (
               <ListItem 
                   roundAvatar

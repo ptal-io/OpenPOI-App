@@ -7,23 +7,37 @@
 
 *************************************************/
 import React, { Component } from "react";
-import { StackNavigator } from 'react-navigation';
+import { StackNavigator, DrawerNavigator } from 'react-navigation';
+import { AsyncStorage } from 'react-navigation';
+import LoginScreen from './Components/LoginScreen';
+import SignupScreen from './Components/SignupScreen';
 import HomeScreen from './Components/HomeScreen';
 import PoiScreen from './Components/PoiScreen';
+// import './global.js'
 
 // Get rid of that annoying warnings box for prod app
 console.disableYellowBox = true;
 
+
+
 // Navigation - Screens
 const OpenPOI = StackNavigator({
   Home: { screen: HomeScreen },
-  PoiDetails: { screen: PoiScreen }
+  PoiDetails: { screen: PoiScreen },
+  Login: { screen: LoginScreen }
 });
+
+
+const DrawerWrapper = DrawerNavigator ({
+    Home: {screen: OpenPOI },
+    Logout: { screen: LoginScreen }
+});
+
 
 // Render the first screen
 export default class App extends React.Component {
   render() {
-    return <OpenPOI />;
+    return <DrawerWrapper />;
   }
 }
 
