@@ -119,23 +119,22 @@ export default class HomeScreen extends Component {
 
   componentWillMount() {
     console.log('Home Screen: Component Will Mount');
+    this.setState({appState: 'inactive'});
 
-    try {
-      AsyncStorage.getItem("openpoisession").then((value) => {
-          console.log("HOME SCREEN:"+ value);
-          // If the user is not logged in, send them to the login screen
-          if (value == 'OPENNADA') {
-            this.setState({loading: false });
-            this.props.navigation.navigate('Login');
-          } else {
-              this.getCurrentLocationYo();
-          }
-              
-
-      }).done();
-    } catch (error) {
-        console.log('error')
-    }
+    AsyncStorage.getItem("openpoisession").then((value) => {
+        console.log("HOME SCREEN:"+ value);
+        // If the user is not logged in, send them to the login screen
+        if (value == 'OPENNADA') {
+          console.log("Home Screen: User not logged in");
+          this.setState({loading: false });
+          this.props.navigation.navigate('Login');
+        } else {
+          console.log("Home Screen: User is logged in")
+          AppState.addEventListener('change', this._handleAppStateChange);
+          this.getCurrentLocationYo();
+        }
+            
+    }).done();
 
     AppState.addEventListener('change', this._handleAppStateChange);
     console.log('end componentWillMount');
@@ -214,7 +213,7 @@ export default class HomeScreen extends Component {
             keyExtractor={(item, index) => index}
             renderItem={({ item }) => (
               <ListItem
-                onPress={() => navigate('PoiDetails', { name: item.osm_name, id: item.id, lat:item.osm_lat, lng:item.osm_lng, cat:item.osm_cat })}
+                onPress={() => navigate('PoiDetails', { name: item.osm_name, id: item.id, lat:item.osm_lat, lng:item.osm_lng, cat:item.osm_type })}
                 title={`${item.osm_name}`}
                 subtitle={`${item.distance} ${item.direction}`}
                 avatar={{ uri: item.avatar }}

@@ -28,6 +28,7 @@ export default class LoginScreen extends React.Component {
 
   componentWillMount() {
 
+    console.log('Login: CompontentWillMount');
     // Set session key to NOTHING when login screen loads (this is logging out)
     AsyncStorage.setItem("openpoisession", 'OPENNADA');
     AsyncStorage.setItem("openpoiuserid", '0');

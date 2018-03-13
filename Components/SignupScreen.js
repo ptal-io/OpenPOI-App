@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, Modal, TouchableNativeFeedback, Keyboard } from "react-native";
 import { Button } from "react-native-elements";
 import { StackNavigator } from 'react-navigation';
+import md5 from "react-native-md5";
+
 import styles from './style_signup';
 
 // POI DETAILS
@@ -11,8 +13,10 @@ export default class SignupScreen extends React.Component {
 
     this.state = {
       username: null,
+      name: null,
       password: null,
-      email: null
+      email: null,
+      random: null
     };
   }
   
@@ -25,7 +29,28 @@ export default class SignupScreen extends React.Component {
   }
 
   doSignUp() {
+    var hex_md5v = md5.hex_md5(Date.now() +"" );
+    var pass = md5.hex_md5(this.state.password+"");
+    console.log(hex_md5v);
+    console.log(pass);
 
+    var url = 'https://openpoi.org/signup/?username='+this.state.username+'&name='+this.state.name+'&email='+this.state.email+'&pass='+hex_md5v+pass;
+    console.log(url);
+    fetch(url, {
+      method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        this.props.navigation.navigate('Login');
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    
   }
 
   render() {
@@ -39,27 +64,27 @@ export default class SignupScreen extends React.Component {
           <TextInput 
             style={styles.txtinput}
             placeholder={'Name'}
-            value={'Luke'}
             underlineColorAndroid = 'transparent'
+            onChangeText={(name) => this.setState({name})}
           />
           <TextInput 
             style={styles.txtinput}
-            placeholder={'Email'}
-            value={'luke@skywalker.com'}
+            placeholder={'E-mail Address'}
             underlineColorAndroid = 'transparent'
+            onChangeText={(email) => this.setState({email})}
           />
           <TextInput 
             style={styles.txtinput}
             placeholder={'Username'}
-            value={'luke'}
             underlineColorAndroid = 'transparent'
+            onChangeText={(username) => this.setState({username})}
           />
           <TextInput 
             style={styles.txtinput}
             placeholder={'Password'}
-            value={'pass'}
             secureTextEntry={true}
             underlineColorAndroid = 'transparent'
+            onChangeText={(password) => this.setState({password})}
           />
           <TouchableNativeFeedback
             onPress={this._onPressButton}

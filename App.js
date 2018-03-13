@@ -30,6 +30,7 @@ const OpenPOI = StackNavigator({
 
 const DrawerWrapper = DrawerNavigator ({
     Home: {screen: OpenPOI },
+    SignUp: { screen: SignupScreen },
     Logout: { screen: LoginScreen }
 });
 

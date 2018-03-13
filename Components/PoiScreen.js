@@ -42,14 +42,13 @@ export default class PoiScreen extends React.Component {
 
     var url = 'https://openpoi.org/checkin/get?poi='+this.props.navigation.state.params.id;
     this.setState({category:this.props.navigation.state.params.cat});
-    console.log("POI CHECKINS: "+url);
+    //console.log("POI CHECKINS: "+url);
     this.setState({ loading: true });
     fetch(url)
       .then(response => response.json())
       .then(response => {
-        console.log(response[0]);
         this.setState({
-          data: response,
+          data: response.data,
           error: response.error || null,
           loading: false,
           refreshing: false,
@@ -62,12 +61,12 @@ export default class PoiScreen extends React.Component {
 
     // GET CATEGORY.  To Do: combine this with getcheckins and other data.
     var url = 'https://openpoi.org/tags/get?poi='+this.props.navigation.state.params.id;
+    //console.log("CATEGORY: "+url);
     fetch(url)
       .then(response => response.json())
       .then(response => {
-        console.log(response);
         this.setState({
-          category: response[0].cat,
+          category: response.data[0].cat,
           error: response.error || null,
           loading: false,
           refreshing: false,
@@ -83,31 +82,34 @@ export default class PoiScreen extends React.Component {
   doCheckin(id, lat, lng) {
 
     console.log("USERID: "+this.state.userid);
-    fetch('https://openpoi.org/checkin/add?user='+this.state.userid+'&poi='+id+'&lat='+lat+'&lng='+lng, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((response) => response.json())
-      .then((responseJson) => {
-        
-        this.props.navigation.goBack();
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    if (this.state.userid != null) {
+        fetch('https://openpoi.org/checkin/add?user='+this.state.userid+'&poi='+id+'&lat='+lat+'&lng='+lng, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+          this.props.navigation.goBack();
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else {
+      console.log('No USERID for check-in.')
+    }
   }
 
   // UPDATE POI WITH TAGS
   addTags(id) {
-    console.log(this.state.tags);
-    var tags = this.state.tags.replace(":","=").replace("#","&");
+    // console.log(this.state.tags);
+    var tags = this.state.tags.replace(/:/g,"=").replace(/#/g,"&");
     var newcat = tags.split("=");
     console.log(tags);
-    var url = 'https://openpoi.org/tags/add?user=1&poi='+id+tags;
-    console.log(url);
+    var url = 'https://openpoi.org/tags/add?user='+this.state.userid+'&poi='+id+tags;
+    // console.log(url);
     fetch(url, {
       method: 'GET',
         headers: {
@@ -129,7 +131,7 @@ export default class PoiScreen extends React.Component {
   render() {
     const { params } = this.props.navigation.state;
 
-    console.log(params);
+    // console.log(params);
 
     return (
     <View style={{flex:1, backgroundColor:'#fff'}}>
@@ -146,7 +148,7 @@ export default class PoiScreen extends React.Component {
           style={styles.textinput}
           //placeholder={'#category:'}
           // onChangeText={(text) => console.log({text})}
-          defaultValue='#category:'
+          defaultValue='#cat:'
           onChangeText={(tags) => this.setState({tags})}
         />      
       </View>
@@ -187,9 +189,9 @@ export default class PoiScreen extends React.Component {
               <ListItem 
                   roundAvatar
                   hideChevron={true}
-                  title={`${item.userdetails[0].name}`}
+                  title={`${item.details.name}`}
                   subtitle={`${new Date(item.ts).toDateString() + " " + new Date(item.ts).getHours() + ":" + (new Date(item.ts).getMinutes()<10?'0':'') + new Date(item.ts).getMinutes()}`}
-                  avatar={{ uri: item.userdetails[0].photo }}    
+                  avatar={{ uri: item.details.photo }}    
                 />
                 )}
             />
